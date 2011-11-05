@@ -2,6 +2,7 @@ package simplerestclient;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidParameterException;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,7 +20,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class RateLimitedHTTPRequest implements IHTTPRequest {
 
 	private final int waitMillis;
-	private HTTPRequest httpRequest;
+	private IHTTPRequest httpRequest;
 	private Lock lock;
 
 	/**
@@ -29,6 +30,15 @@ public class RateLimitedHTTPRequest implements IHTTPRequest {
 		this.waitMillis = waitMillis;	
 		this.httpRequest = new HTTPRequest();
 		lock = new ReentrantLock(true);
+	}
+	
+	public RateLimitedHTTPRequest(int waitMillis, IHTTPRequest req) {
+		if (req instanceof RateLimitedHTTPRequest)
+			throw new InvalidParameterException("Cannot pass " + RateLimitedHTTPRequest.class.getName() + " instance to " + this.getClass().getName() + " constructor.");
+		
+		this.waitMillis = waitMillis;	
+		lock = new ReentrantLock(true);
+		this.httpRequest = req;
 	}
 	
 	/* (non-Javadoc)
